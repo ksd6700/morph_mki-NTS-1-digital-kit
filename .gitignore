@@ -1,0 +1,13 @@
+.DS_Store
+
+# Build products
+build/
+
+# Optional local SDK checkout
+vendor/
+
+# Local editor/cache files
+.vscode/
+.idea/
+*.swp
+*.swo
