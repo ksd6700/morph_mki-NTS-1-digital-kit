@@ -1,0 +1,21 @@
+{
+    "header" :
+    {
+        "platform" : "prologue",
+        "module" : "osc",
+        "api" : "1.1-0",
+        "dev_id" : 0,
+        "prg_id" : 1313,
+        "version" : "1.0-0",
+        "name" : "MorphOSC",
+        "num_param" : 6,
+        "params" : [
+            ["WIDTH",  0, 100, "%"],
+            ["FOLD",   0, 100, "%"],
+            ["SUB",    0, 100, "%"],
+            ["ANIM",   0, 100, "%"],
+            ["TONE",   0, 100, "%"],
+            ["LEVEL",  0, 100, "%"]
+        ]
+    }
+}

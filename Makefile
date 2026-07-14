@@ -1,20 +1,35 @@
 # #############################################################################
-# KORG NTS-1 User Oscillator Makefile
+# KORG logue SDK User Oscillator Makefile
 # #############################################################################
 
 PROJECTDIR ?= $(abspath .)
 
 # Clone KORG's logue SDK into vendor/logue-sdk, or point LOGUE_SDK_DIR at an
-# existing checkout. This local default matches the SDK already available here.
-LOCAL_LOGUE_SDK ?= /Users/kashida/Documents/Codex/2026-05-26/nts-1-digital-kit/vendor/logue-sdk
-LOGUE_SDK_DIR ?= $(if $(wildcard $(PROJECTDIR)/vendor/logue-sdk),$(PROJECTDIR)/vendor/logue-sdk,$(LOCAL_LOGUE_SDK))
+# existing checkout.
+LOGUE_SDK_DIR ?= $(PROJECTDIR)/vendor/logue-sdk
 
-PLATFORMDIR ?= $(LOGUE_SDK_DIR)/platform/nutekt-digital
+SUPPORTED_PLATFORMS := nutekt-digital minilogue-xd prologue
+PLATFORM ?= nutekt-digital
+
+ifeq ($(PLATFORM),nutekt-digital)
+  MCU_MODEL := STM32F446xE
+  PKGEXT := ntkdigunit
+else ifeq ($(PLATFORM),minilogue-xd)
+  MCU_MODEL := STM32F401xC
+  PKGEXT := mnlgxdunit
+else ifeq ($(PLATFORM),prologue)
+  MCU_MODEL := STM32F401xC
+  PKGEXT := prlgunit
+else
+  $(error Unsupported PLATFORM "$(PLATFORM)"; choose one of $(SUPPORTED_PLATFORMS))
+endif
+
+PLATFORMDIR ?= $(LOGUE_SDK_DIR)/platform/$(PLATFORM)
 INSTALLDIR ?= $(PROJECTDIR)/dist
 TOOLSDIR ?= $(LOGUE_SDK_DIR)/tools
 EXTDIR ?= $(PLATFORMDIR)/../ext
 CMSISDIR ?= $(EXTDIR)/CMSIS/CMSIS
-LDDIR ?= $(PROJECTDIR)/ld
+LDDIR ?= $(if $(wildcard $(PLATFORMDIR)/dummy-osc/ld),$(PLATFORMDIR)/dummy-osc/ld,$(PROJECTDIR)/ld)
 
 ZIP ?= /usr/bin/zip
 ZIP_ARGS := -r -q
@@ -30,8 +45,6 @@ include $(PROJECTDIR)/project.mk
 # #############################################################################
 
 MCU := cortex-m4
-MCU_MODEL := STM32F446xE
-
 GCC_TARGET := arm-none-eabi-
 GCC_BIN_PATH ?= $(TOOLSDIR)/gcc/gcc-arm-none-eabi-5_4-2016q3/bin
 
@@ -70,11 +83,11 @@ TOPT := -mthumb -mno-thumb-interwork -DTHUMB_NO_INTERWORKING -DTHUMB_PRESENT
 # Set targets and directories
 # #############################################################################
 
-PKGARCH := $(PROJECT).ntkdigunit
-MANIFEST := manifest.json
+PKGARCH := $(PROJECT).$(PKGEXT)
+MANIFEST := manifests/$(PLATFORM).json
 PAYLOAD := payload.bin
 
-BUILDDIR := $(PROJECTDIR)/build
+BUILDDIR := $(PROJECTDIR)/build/$(PLATFORM)
 OBJDIR := $(BUILDDIR)/obj
 LSTDIR := $(BUILDDIR)/lst
 
@@ -100,7 +113,9 @@ DINCDIR := $(PROJECTDIR)/inc \
            $(PLATFORMDIR)/inc \
            $(PLATFORMDIR)/inc/dsp \
            $(PLATFORMDIR)/inc/utils \
-           $(CMSISDIR)/Include
+           $(CMSISDIR)/Include \
+           $(CMSISDIR)/Core/Include \
+           $(CMSISDIR)/DSP/Include
 
 INCDIR := $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 DEFS := $(DDEFS) $(UDEFS)
@@ -197,10 +212,16 @@ clean:
 	@echo Done
 	@echo
 
+clean-all:
+	@echo Cleaning all platform builds
+	-rm -fR $(PROJECTDIR)/.dep $(PROJECTDIR)/build
+	@echo Done
+	@echo
+
 $(BUILDDIR)/$(PKGARCH): $(OBJS) $(OUTFILES) $(PROJECTDIR)/$(MANIFEST)
 	@echo Packaging to $(BUILDDIR)/$(PKGARCH)
 	@mkdir -p $(BUILDDIR)/$(PROJECT)
-	@cp -a $(PROJECTDIR)/$(MANIFEST) $(BUILDDIR)/$(PROJECT)/
+	@cp -a $(PROJECTDIR)/$(MANIFEST) $(BUILDDIR)/$(PROJECT)/manifest.json
 	@cp -a $(BUILDDIR)/$(PROJECT).bin $(BUILDDIR)/$(PROJECT)/$(PAYLOAD)
 	@cd $(BUILDDIR) && $(ZIP) $(ZIP_ARGS) $(PROJECT).zip $(PROJECT)
 	@mv $(BUILDDIR)/$(PROJECT).zip $(BUILDDIR)/$(PKGARCH)
@@ -214,4 +235,10 @@ install: $(BUILDDIR)/$(PKGARCH)
 	@echo Done
 	@echo
 
-.PHONY: all clean package install PRE_ALL POST_ALL
+all-platforms:
+	@set -e; for p in $(SUPPORTED_PLATFORMS); do \
+		echo "==> Building $$p"; \
+		$(MAKE) PLATFORM=$$p install; \
+	done
+
+.PHONY: all all-platforms clean clean-all package install PRE_ALL POST_ALL
