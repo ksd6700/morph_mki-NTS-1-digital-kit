@@ -1,14 +1,22 @@
 # MorphOSC for KORG logue SDK synths
 
-MorphOSC is a custom KORG logue SDK user oscillator whose main `SHAPE` knob continuously morphs the oscillator waveform:
+[English](#english) | [日本語](#日本語)
+
+## English
+
+### Introduction
+
+MorphOSC is a custom user oscillator for compatible KORG logue SDK synthesizers. It is designed for expressive timbral movement: hold a note and turn the main `SHAPE` knob to continuously morph the oscillator waveform through five distinct characters:
 
 ```text
 sine -> triangle -> saw -> pulse -> folded saw
 ```
 
-The morph is smoothed for live knob movement, and the brighter shapes use the logue SDK band-limited wave tables where possible.
+The lower part of the range moves from soft and rounded to bright and harmonically rich. The upper part travels through pulse tones into an aggressive folded-saw texture. Transitions are smoothed for live knob movement, and the brighter shapes use the logue SDK band-limited wave tables where possible.
 
-## Downloads
+Additional parameters provide pulse-width control, wave folding, a sub oscillator, slow animation, tone shaping, and output-level adjustment. Ready-to-load packages are included for the original Nu:Tekt NTS-1 digital kit, minilogue xd, and prologue.
+
+### Downloads
 
 Pick the file for your instrument:
 
@@ -20,7 +28,7 @@ Pick the file for your instrument:
 
 Load the matching unit file with KORG Librarian into a user oscillator slot.
 
-## Controls
+### Controls
 
 | Control | Function |
 | --- | --- |
@@ -33,7 +41,7 @@ Load the matching unit file with KORG Librarian into a user oscillator slot.
 | `TONE` | Internal tone tilt, also follows the NTS-1 cutoff value. |
 | `LEVEL` | Output level. |
 
-## Build
+### Build
 
 Clone the KORG logue SDK into `vendor/logue-sdk`, or point `LOGUE_SDK_DIR` at an existing checkout.
 
@@ -63,7 +71,7 @@ Supported `PLATFORM` values are `nutekt-digital`, `minilogue-xd`, and `prologue`
 
 NTS-1 mkII and microKORG2 use the newer logue SDK C++ unit API, so they need a separate port rather than just another package manifest.
 
-## 日本語メモ
+## 日本語
 
 KORG logue SDK用のユーザーオシレーターです。`SHAPE`つまみを回すと、サイン波から三角波、ノコギリ波、パルス波、折り返しノコギリ波へ連続的にモーフィングします。
 
